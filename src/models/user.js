@@ -36,6 +36,9 @@ const userSchema = new mongoose.Schema({
             if(value < 0) throw new Error('Age must be a positive number.')
         }
     },
+    avatar: {
+        type: Buffer
+    },
     tokens: [{
         token: {
             type: String,
@@ -56,12 +59,13 @@ userSchema.methods.toJSON = function() {
     const userObject = this.toObject()
     delete userObject.password
     delete userObject.tokens
+    delete userObject.avatar
     return userObject
 }
 
 userSchema.methods.generateAuthToken = async function() {
     const user = this
-    const token = jwt.sign({ _id: user._id.toString() }, 'ofcourseistillloveyou')
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
